@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>DBMS Quiz • Telegram Style</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1d21;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .quiz-container {
+      max-width: 620px;
+      width: 100%;
+      background: #21262c;
+      border-radius: 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      padding: 1.6rem 1.5rem 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      transition: all 0.2s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .quiz-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #a8b3cf;
+      font-weight: 500;
+      font-size: 0.9rem;
+      letter-spacing: 0.2px;
+      background: #2b3139;
+      padding: 0.7rem 1.2rem;
+      border-radius: 20px;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .progress-badge {
+      background: #3e454f;
+      padding: 0.35rem 1rem;
+      border-radius: 30px;
+      color: #d4dce6;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .score-badge {
+      background: #2d4b3a;
+      padding: 0.35rem 0.8rem;
+      border-radius: 30px;
+      color: #a3d9b1;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .shuffle-badge {
+      background: #4a3d6b;
+      padding: 0.35rem 0.8rem;
+      border-radius: 30px;
+      color: #c9b8f0;
+      font-weight: 600;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .shuffle-badge:hover {
+      background: #5e4d8b;
+    }
+
+    .question-text {
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #ffffff;
+      margin: 0.1rem 0 0.2rem;
+      word-break: break-word;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-top: 0.2rem;
+    }
+
+    .option-item {
+      background: #2b3139;
+      border-radius: 16px;
+      padding: 0.9rem 1.1rem;
+      color: #e4e8f1;
+      font-weight: 500;
+      font-size: 0.95rem;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      backdrop-filter: blur(2px);
+      word-break: break-word;
+    }
+
+    .option-item:hover {
+      background: #343b46;
+      border-color: #4f5b6b;
+    }
+
+    .option-letter {
+      background: #3c4450;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #cfd7e6;
+      flex-shrink: 0;
+    }
+
+    .option-item.correct {
+      background: #1d4d3b;
+      border-color: #2ecc71;
+      color: white;
+    }
+    .option-item.correct .option-letter {
+      background: #2ecc71;
+      color: #0a1f14;
+    }
+
+    .option-item.wrong {
+      background: #4d2c2c;
+      border-color: #e74c3c;
+      color: white;
+    }
+    .option-item.wrong .option-letter {
+      background: #e74c3c;
+      color: #fff;
+    }
+
+    .option-item.disabled {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .explanation-box {
+      background: #2a3039;
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      border-left: 4px solid #5b8cce;
+      color: #cdd6f0;
+      font-size: 0.9rem;
+      font-weight: 400;
+      line-height: 1.6;
+      margin-top: 0.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      animation: fadeSlide 0.3s ease;
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .explanation-header {
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 0.95rem;
+    }
+
+    .explanation-body {
+      color: #c5cee0;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .explanation-detail {
+      background: #323a45;
+      padding: 0.6rem 0.9rem;
+      border-radius: 10px;
+      margin-top: 0.2rem;
+      font-size: 0.85rem;
+      color: #d4dceb;
+    }
+
+    .correct-answer-highlight {
+      color: #2ecc71;
+      font-weight: 600;
+    }
+
+    .wrong-answer-highlight {
+      color: #e74c3c;
+      font-weight: 500;
+      text-decoration: line-through;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.3rem;
+    }
+
+    .nav-group {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 0.7rem 1.2rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #3f6fb0;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #5281ca;
+    }
+    .btn-primary:active {
+      transform: scale(0.96);
+      background: #3a5f94;
+    }
+
+    .btn-secondary {
+      background: #3a414b;
+      color: #cfd7e6;
+    }
+    .btn-secondary:hover {
+      background: #4a5565;
+    }
+    .btn-secondary:active {
+      transform: scale(0.96);
+    }
+
+    .btn-warning {
+      background: #8b4a3a;
+      color: white;
+    }
+    .btn-warning:hover {
+      background: #a55a45;
+    }
+
+    .btn-success {
+      background: #2d6a4f;
+      color: white;
+    }
+    .btn-success:hover {
+      background: #3a8b66;
+    }
+
+    .btn-info {
+      background: #4a3d6b;
+      color: white;
+    }
+    .btn-info:hover {
+      background: #5e4d8b;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      background: #3e4a58;
+      box-shadow: none;
+    }
+
+    .completion-message {
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 1.1rem;
+      padding: 1.4rem;
+      background: #2a3039;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .stats-grid {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 0.5rem 0;
+    }
+
+    .stat-item {
+      background: #323a44;
+      padding: 0.8rem 1.2rem;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #a0afc4;
+      margin-top: 0.2rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .developer-credit {
+      text-align: right;
+      font-size: 0.7rem;
+      color: #5f6b7c;
+      margin-top: 0.2rem;
+      letter-spacing: 0.2px;
+      font-weight: 400;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 0.8rem;
+    }
+
+    .review-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 0.5rem 0;
+      text-align: left;
+      width: 100%;
+    }
+
+    .review-item {
+      background: #2b3139;
+      padding: 0.6rem 0.8rem;
+      border-radius: 10px;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .review-correct {
+      color: #2ecc71;
+    }
+    .review-wrong {
+      color: #e74c3c;
+    }
+
+    .shuffle-indicator {
+      font-size: 0.7rem;
+      color: #c9b8f0;
+      background: #4a3d6b;
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container" id="quizApp"></div>
+  <script>
+    (function() {
+      const originalQuestions = [
+        { question: "1. What is data?", options: ["Processed information", "Raw facts", "Organized knowledge", "Meaningful output"], correct: 1, explanation: "Data refers to raw, unprocessed facts and figures without any context. These are the building blocks that, when processed and organized, become information. Think of data as individual numbers, dates, or strings that haven't been analyzed yet." },
+        { question: "2. What is information?", options: ["Raw facts", "Unprocessed data", "Processed data with meaning", "Stored data"], correct: 2, explanation: "Information is data that has been processed, organized, and given context to make it meaningful and useful for decision-making. Unlike raw data, information tells a story and answers questions." },
+        { question: "3. What is a database?", options: ["Collection of programs", "Collection of raw facts only", "Organized collection of data", "Set of queries"], correct: 2, explanation: "A database is an organized collection of structured data, typically stored electronically. It's designed to efficiently store, retrieve, and manage large amounts of related information." },
+        { question: "4. What does DBMS stand for?", options: ["Database Managing System", "Database Management System", "Data Backup Management System", "Data Basic Management System"], correct: 1, explanation: "DBMS stands for Database Management System - software that acts as an interface between the database and users, handling data storage, retrieval, and manipulation while ensuring security and integrity." },
+        { question: "5. Role of DBMS?", options: ["Deletes data", "Manages and controls database access", "Creates hardware", "Only stores files"], correct: 1, explanation: "The primary role of a DBMS is to manage and control access to the database. It handles user authentication, concurrency control, backup/recovery, and ensures data consistency across multiple users." },
+        { question: "6. Data redundancy means?", options: ["Data security", "Duplicate data", "Accurate data", "Data sharing"], correct: 1, explanation: "Data redundancy occurs when the same piece of data is stored in multiple places. This wastes storage space and can lead to inconsistencies when updates aren't applied everywhere." },
+        { question: "7. Data inconsistency occurs when?", options: ["Data is same everywhere", "Different versions exist", "Data is deleted", "Data is processed"], correct: 1, explanation: "Data inconsistency happens when different copies of the same data don't match. This typically occurs in systems with high redundancy where updates aren't synchronized across all locations." },
+        { question: "8. What is metadata?", options: ["Data about data", "Raw data", "Processed data", "Deleted data"], correct: 0, explanation: "Metadata is 'data about data' - it describes the structure, format, and context of the actual data. Examples include column names, data types, creation dates, and file sizes." },
+        { question: "9. Database design focuses on?", options: ["Hardware", "Software only", "Structure of database", "Network"], correct: 2, explanation: "Database design focuses on creating the optimal structure for storing data. This includes defining tables, relationships, constraints, and normalization to ensure efficiency and integrity." },
+        { question: "10. Poor database design results in?", options: ["Efficiency", "Errors", "Accuracy", "Security"], correct: 1, explanation: "Poor database design leads to errors such as data anomalies, redundancy, and integrity issues. These problems make data unreliable and can cause application failures." },
+        { question: "11. Structural dependence means?", options: ["Independent structure", "Access depends on structure", "No structure", "Flexible structure"], correct: 1, explanation: "Structural dependence means that data access methods depend on the physical structure of the database. If the structure changes, all programs accessing that data must also be modified." },
+        { question: "12. Data independence means?", options: ["Data changes affect programs", "No data", "Programs unaffected by data changes", "Manual changes"], correct: 2, explanation: "Data independence allows changes to the database structure without affecting application programs. This is a key advantage of modern DBMS, providing flexibility in database evolution." },
+        { question: "13. Data anomaly occurs when?", options: ["Data is correct", "Changes are incomplete", "Data is deleted", "Data is duplicated"], correct: 1, explanation: "Data anomalies occur when changes (inserts, updates, or deletes) are made incompletely, leading to inconsistent or illogical data states within the database." },
+        { question: "14. Types of anomaly include?", options: ["Insert, Delete, Update", "Create, Drop, Modify", "Select, Insert, Update", "Grant, Revoke, Commit"], correct: 0, explanation: "The three main types of data anomalies are Insert (can't add data without other data), Delete (losing unintended data), and Update (inconsistent modifications across records)." },
+        { question: "15. Entity represents?", options: ["Verb", "Action", "Noun", "Command"], correct: 2, explanation: "An entity represents a noun - a person, place, thing, or concept about which data can be stored. In database design, entities become tables (e.g., Customer, Product, Order)." },
+        { question: "16. Attributes describe?", options: ["Relationships", "Properties of entity", "Tables", "Commands"], correct: 1, explanation: "Attributes describe the properties or characteristics of an entity. For a 'Student' entity, attributes would include name, ID, major, and enrollment date." },
+        { question: "17. Relationship type 1:M means?", options: ["One-to-one", "One-to-many", "Many-to-many", "None"], correct: 1, explanation: "A 1:M (One-to-Many) relationship means one record in the first table can relate to many records in the second table. Example: One customer can place many orders." },
+        { question: "18. Relational database uses?", options: ["Graphs", "Tables", "Trees", "Files"], correct: 1, explanation: "Relational databases organize data into tables (relations) with rows and columns. This tabular structure, using primary and foreign keys, enables flexible data relationships." },
+        { question: "19. Primary key is?", options: ["Duplicate field", "Unique identifier", "Foreign key", "Null field"], correct: 1, explanation: "A primary key is a unique identifier for each record in a table. It must contain unique values, cannot be NULL, and each table can have only one primary key." },
+        { question: "20. Foreign key is?", options: ["Primary identifier", "Link to another table", "Duplicate", "Optional field"], correct: 1, explanation: "A foreign key is a field that creates a link between two tables by referencing the primary key of another table, establishing referential integrity in relationships." },
+        { question: "21. SQL stands for?", options: ["Structured Query Language", "Simple Query Language", "System Query Language", "Standard Query Logic"], correct: 0, explanation: "SQL (Structured Query Language) is the standard language for managing and manipulating relational databases. It's used for querying, updating, and managing data and database structures." },
+        { question: "22. SQL is used for?", options: ["Design hardware", "Manage data", "Create networks", "Build OS"], correct: 1, explanation: "SQL is specifically designed for managing data in relational database systems. It handles data definition (DDL), manipulation (DML), access control (DCL), and transaction control (TCL)." },
+        { question: "23. RDBMS means?", options: ["Relational DBMS", "Random DBMS", "Rapid DBMS", "Real DBMS"], correct: 0, explanation: "RDBMS stands for Relational Database Management System - a DBMS based on the relational model where data is organized into related tables, introduced by E.F. Codd." },
+        { question: "24. DDL includes?", options: ["SELECT", "INSERT", "CREATE", "DELETE"], correct: 2, explanation: "DDL (Data Definition Language) includes commands like CREATE, ALTER, DROP, and TRUNCATE - used to define and modify database structures (tables, schemas, indexes)." },
+        { question: "25. DML includes?", options: ["CREATE", "DROP", "SELECT", "ALTER"], correct: 2, explanation: "DML (Data Manipulation Language) includes SELECT, INSERT, UPDATE, and DELETE - commands that manipulate the actual data within database tables." },
+        { question: "26. DCL includes?", options: ["GRANT", "INSERT", "UPDATE", "DELETE"], correct: 0, explanation: "DCL (Data Control Language) includes GRANT and REVOKE - commands that control access permissions to the database, managing user privileges and security." },
+        { question: "27. TCL includes?", options: ["COMMIT", "CREATE", "DROP", "ALTER"], correct: 0, explanation: "TCL (Transaction Control Language) includes COMMIT, ROLLBACK, and SAVEPOINT - commands that manage database transactions, ensuring data consistency and recovery." },
+        { question: "28. Command to create database?", options: ["CREATE DB", "NEW DATABASE", "CREATE DATABASE", "ADD DATABASE"], correct: 2, explanation: "The correct SQL command is 'CREATE DATABASE database_name;' - this creates a new database container that can hold multiple tables and other objects." },
+        { question: "29. Command to view databases?", options: ["SHOW DATABASES", "VIEW DATABASE", "DISPLAY DB", "LIST DB"], correct: 0, explanation: "'SHOW DATABASES;' is the MySQL command to list all available databases on the server. Other DBMS like PostgreSQL use '\\l' or 'SELECT datname FROM pg_database;'" },
+        { question: "30. Command to select database?", options: ["USE", "OPEN", "SELECT", "ACTIVATE"], correct: 0, explanation: "The 'USE database_name;' command in MySQL selects a specific database to work with. All subsequent operations apply to this database until another is selected." },
+        { question: "31. Command to delete database?", options: ["REMOVE", "DROP DATABASE", "DELETE DB", "ERASE DB"], correct: 1, explanation: "'DROP DATABASE database_name;' permanently removes the entire database including all tables, data, and objects. This action cannot be undone, so use with caution." },
+        { question: "32. CREATE TABLE requires?", options: ["Table name only", "Fields only", "Name, fields, definitions", "Database only"], correct: 2, explanation: "Creating a table requires specifying the table name, column names with their data types, and optional constraints. Example: CREATE TABLE students (id INT PRIMARY KEY, name VARCHAR(50));" },
+        { question: "33. Constraint ensures?", options: ["Speed", "Accuracy", "Security", "Backup"], correct: 1, explanation: "Constraints ensure data accuracy and integrity by enforcing rules. Types include NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, and DEFAULT constraints." },
+        { question: "34. NOT NULL means?", options: ["Can be empty", "Must have value", "Optional", "Duplicate"], correct: 1, explanation: "NOT NULL constraint ensures a column must always have a value. It prevents inserting or updating records with NULL (empty) values in that specific column." },
+        { question: "35. UNIQUE means?", options: ["Duplicate allowed", "Only one value allowed", "Null allowed", "Optional"], correct: 1, explanation: "UNIQUE constraint ensures all values in a column are different from each other. Unlike PRIMARY KEY, a table can have multiple UNIQUE columns and they can contain NULL values." },
+        { question: "36. ALTER is used to?", options: ["Delete DB", "Modify table", "Create DB", "Select data"], correct: 1, explanation: "ALTER TABLE is a DDL command used to modify an existing table structure - adding/removing columns, changing data types, adding constraints, or renaming elements." },
+        { question: "37. DROP TABLE means?", options: ["Delete structure", "Delete data only", "Modify", "Rename"], correct: 0, explanation: "DROP TABLE removes both the table structure (schema) and all its data permanently. Unlike TRUNCATE or DELETE, the entire table definition is removed from the database." },
+        { question: "38. TRUNCATE means?", options: ["Delete structure", "Delete data only", "Rename", "Modify"], correct: 1, explanation: "TRUNCATE removes all rows from a table quickly while preserving the table structure for future use. It's faster than DELETE because it doesn't log individual row deletions." },
+        { question: "39. VARCHAR is?", options: ["Fixed length", "Variable length string", "Integer", "Date"], correct: 1, explanation: "VARCHAR (Variable Character) stores variable-length strings, using only the space needed for the actual content. CHAR is fixed-length, while TEXT is for longer strings." },
+        { question: "40. INT is?", options: ["Text", "Integer", "Date", "Float"], correct: 1, explanation: "INT (Integer) is a numeric data type that stores whole numbers without decimal points. Common variations include TINYINT, SMALLINT, MEDIUMINT, INT, and BIGINT for different ranges." }
+      ];
+
+      const appEl = document.getElementById('quizApp');
+      
+      let questions = [...originalQuestions];
+      let currentIndex = 0;
+      let selectedOptionIndex = null;
+      let answerLocked = false;
+      let explanationText = "";
+      let userAnswers = new Array(questions.length).fill(null);
+      let showReview = false;
+      let isShuffled = false;
+
+      function shuffleArray(arr) {
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      }
+
+      function shuffleQuestions() {
+        const shuffledQuestions = shuffleArray(originalQuestions).map((q, index) => {
+          const optionPairs = q.options.map((opt, optIndex) => ({ text: opt, originalIndex: optIndex }));
+          const shuffledOptions = shuffleArray(optionPairs);
+          const newCorrectIndex = shuffledOptions.findIndex(opt => opt.originalIndex === q.correct);
+          
+          return {
+            question: `${index + 1}. ${q.question.replace(/^\d+\.\s*/, '')}`,
+            options: shuffledOptions.map(opt => opt.text),
+            correct: newCorrectIndex,
+            explanation: q.explanation,
+            originalQuestion: q.question
+          };
+        });
+        
+        return shuffledQuestions;
+      }
+
+      function resetToOriginal() {
+        questions = originalQuestions.map((q, index) => ({
+          ...q,
+          question: `${index + 1}. ${q.question.replace(/^\d+\.\s*/, '')}`
+        }));
+        isShuffled = false;
+      }
+
+      function getCorrectAnswerText(q) {
+        return q.options[q.correct];
+      }
+
+      function generateDetailedExplanation(q, selectedIdx) {
+        const correctAns = getCorrectAnswerText(q);
+        const selectedAns = q.options[selectedIdx];
+        
+        return {
+          header: `Incorrect — You selected: "${selectedAns}"`,
+          body: `The correct answer is: <span class="correct-answer-highlight">"${correctAns}"</span>`,
+          detail: q.explanation || `${q.question.replace(/^\d+\.\s*/, '')} — ${correctAns} is the right choice.`
+        };
+      }
+
+      function generateCorrectExplanation(q) {
+        const correctAns = getCorrectAnswerText(q);
+        return {
+          header: `Correct!`,
+          body: `You selected the right answer: <span class="correct-answer-highlight">"${correctAns}"</span>`,
+          detail: q.explanation || `Great job! You understand this concept well.`
+        };
+      }
+
+      function calculateScore() {
+        let correct = 0;
+        userAnswers.forEach((answer, index) => {
+          if (answer === questions[index].correct) correct++;
+        });
+        return { correct, total: questions.length, percentage: Math.round((correct / questions.length) * 100) };
+      }
+
+      function resetQuiz() {
+        currentIndex = 0;
+        selectedOptionIndex = null;
+        answerLocked = false;
+        explanationText = "";
+        userAnswers = new Array(questions.length).fill(null);
+        showReview = false;
+        render();
+      }
+
+      function applyShuffle() {
+        questions = shuffleQuestions();
+        isShuffled = true;
+        resetQuiz();
+      }
+
+      function removeShuffle() {
+        resetToOriginal();
+        resetQuiz();
+      }
+
+      function toggleShuffle() {
+        if (isShuffled) {
+          removeShuffle();
+        } else {
+          applyShuffle();
+        }
+      }
+
+      function goToQuestion(index) {
+        if (index >= 0 && index < questions.length) {
+          currentIndex = index;
+          selectedOptionIndex = userAnswers[currentIndex] !== null ? userAnswers[currentIndex] : null;
+          answerLocked = userAnswers[currentIndex] !== null;
+          if (answerLocked && selectedOptionIndex !== null) {
+            const q = questions[currentIndex];
+            const isCorrect = (selectedOptionIndex === q.correct);
+            explanationText = isCorrect ? generateCorrectExplanation(q) : generateDetailedExplanation(q, selectedOptionIndex);
+          } else {
+            explanationText = "";
+          }
+          showReview = false;
+          render();
+        }
+      }
+
+      function renderExplanationBox(explanation) {
+        if (!explanation) return '';
+        
+        const isCorrect = explanation.header.startsWith('Correct');
+        
+        return `
+          <div class="explanation-box" id="explanationBox">
+            <div class="explanation-header">
+              ${explanation.header}
+            </div>
+            <div class="explanation-body">
+              <div>${explanation.body}</div>
+              <div class="explanation-detail">
+                ${explanation.detail}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function render() {
+        if (showReview) {
+          renderReviewScreen();
+          return;
+        }
+
+        if (currentIndex >= questions.length) {
+          renderCompletionScreen();
+          return;
+        }
+
+        const q = questions[currentIndex];
+        const progress = `${currentIndex + 1}/${questions.length}`;
+        const score = calculateScore();
+        const answeredCount = userAnswers.filter(a => a !== null).length;
+
+        let html = `
+          <div class="quiz-header">
+            <div class="header-left">
+              <span>DBMS Quiz</span>
+              <span class="progress-badge">${progress}</span>
+              <span class="shuffle-badge" id="shuffleToggle" title="${isShuffled ? 'Click to unshuffle' : 'Click to shuffle'}">
+                ${isShuffled ? 'Shuffled' : 'Shuffle'}
+              </span>
+            </div>
+            <span class="score-badge">${score.correct}/${answeredCount || 0}</span>
+          </div>
+          <div class="question-text">${q.question}</div>
+          <div class="options-grid" id="optionsContainer">
+        `;
+
+        q.options.forEach((opt, idx) => {
+          const letter = String.fromCharCode(65 + idx);
+          let optionClass = "option-item";
+
+          if (answerLocked) {
+            optionClass += " disabled";
+            if (idx === q.correct) {
+              optionClass += " correct";
+            } else if (idx === selectedOptionIndex && idx !== q.correct) {
+              optionClass += " wrong";
+            }
+          }
+
+          html += `
+            <div class="${optionClass}" data-option-index="${idx}">
+              <span class="option-letter">${letter}</span>
+              <span>${opt}</span>
+            </div>
+          `;
+        });
+
+        html += `</div>`;
+
+        if (answerLocked && explanationText) {
+          html += renderExplanationBox(explanationText);
+        }
+
+        html += `
+          <div class="action-buttons">
+            <div class="nav-group">
+              <button class="btn btn-secondary" id="prevButton" ${currentIndex === 0 ? 'disabled' : ''}>Prev</button>
+              <button class="btn btn-secondary" id="nextButton" ${!answerLocked ? 'disabled' : ''}>Next</button>
+            </div>
+            <div class="nav-group">
+              <button class="btn btn-info" id="shuffleButton">${isShuffled ? 'Unshuffle' : 'Shuffle'}</button>
+              <button class="btn btn-warning" id="resetButton">Reset</button>
+              <button class="btn btn-secondary" id="reviewButton">Review</button>
+            </div>
+          </div>
+          <div class="developer-credit">developed by yushue_alya1</div>
+        `;
+
+        appEl.innerHTML = html;
+
+        document.querySelectorAll('.option-item').forEach(optEl => {
+          optEl.addEventListener('click', optionClickHandler);
+        });
+
+        document.getElementById('prevButton')?.addEventListener('click', () => goToQuestion(currentIndex - 1));
+        document.getElementById('nextButton')?.addEventListener('click', () => {
+          if (currentIndex < questions.length - 1) {
+            goToQuestion(currentIndex + 1);
+          } else {
+            currentIndex = questions.length;
+            render();
+          }
+        });
+        
+        document.getElementById('shuffleToggle')?.addEventListener('click', toggleShuffle);
+        document.getElementById('shuffleButton')?.addEventListener('click', toggleShuffle);
+        document.getElementById('resetButton')?.addEventListener('click', resetQuiz);
+        document.getElementById('reviewButton')?.addEventListener('click', () => {
+          showReview = true;
+          render();
+        });
+      }
+
+      function optionClickHandler(e) {
+        if (answerLocked) return;
+        const optionDiv = e.currentTarget;
+        const optionIndex = parseInt(optionDiv.getAttribute('data-option-index'), 10);
+        const q = questions[currentIndex];
+
+        selectedOptionIndex = optionIndex;
+        answerLocked = true;
+        userAnswers[currentIndex] = optionIndex;
+
+        const isCorrect = (optionIndex === q.correct);
+        explanationText = isCorrect ? generateCorrectExplanation(q) : generateDetailedExplanation(q, optionIndex);
+
+        render();
+      }
+
+      function renderReviewScreen() {
+        const score = calculateScore();
+        let html = `
+          <div class="completion-message">
+            <h2 style="color:white; margin:0; font-weight:600;">Quiz Review ${isShuffled ? '<span class="shuffle-indicator">Shuffled</span>' : ''}</h2>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">${score.correct}/${score.total}</div>
+                <div class="stat-label">Correct</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">${score.percentage}%</div>
+                <div class="stat-label">Score</div>
+              </div>
+            </div>
+            <div class="review-list">
+        `;
+
+        questions.forEach((q, index) => {
+          const userAnswer = userAnswers[index];
+          const isCorrect = userAnswer === q.correct;
+          const statusClass = isCorrect ? 'review-correct' : 'review-wrong';
+          const statusText = isCorrect ? 'Correct' : 'Wrong';
+          const answerText = userAnswer !== null ? q.options[userAnswer] : 'Not answered';
+          
+          html += `
+            <div class="review-item">
+              <span>${q.question.replace(/^\d+\.\s*/, '')}</span>
+              <span class="${statusClass}">${statusText}: ${answerText}</span>
+            </div>
+          `;
+        });
+
+        html += `
+            </div>
+            <div class="action-buttons" style="width:100%;">
+              <button class="btn btn-secondary" id="backToQuizButton">Back</button>
+              <button class="btn btn-info" id="shuffleReviewButton">${isShuffled ? 'Unshuffle' : 'Shuffle'}</button>
+              <button class="btn btn-warning" id="resetFromReviewButton">Reset All</button>
+            </div>
+          </div>
+          <div class="developer-credit">developed by yushue_alya1</div>
+        `;
+
+        appEl.innerHTML = html;
+
+        document.getElementById('backToQuizButton')?.addEventListener('click', () => {
+          showReview = false;
+          if (currentIndex >= questions.length) {
+            currentIndex = questions.length - 1;
+            goToQuestion(currentIndex);
+          } else {
+            render();
+          }
+        });
+        
+        document.getElementById('shuffleReviewButton')?.addEventListener('click', () => {
+          toggleShuffle();
+          showReview = true;
+          render();
+        });
+        
+        document.getElementById('resetFromReviewButton')?.addEventListener('click', resetQuiz);
+      }
+
+      function renderCompletionScreen() {
+        const score = calculateScore();
+        appEl.innerHTML = `
+          <div class="completion-message">
+            <h2 style="color:white; margin:0.2rem 0; font-weight:600;">Quiz Complete! ${isShuffled ? '<span class="shuffle-indicator">Shuffled</span>' : ''}</h2>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">${score.correct}/${score.total}</div>
+                <div class="stat-label">Correct Answers</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">${score.percentage}%</div>
+                <div class="stat-label">Final Score</div>
+              </div>
+            </div>
+            <div class="action-buttons" style="width:100%;">
+              <button class="btn btn-success" id="reviewCompletedButton">Review Answers</button>
+              <button class="btn btn-info" id="shuffleCompletedButton">${isShuffled ? 'Unshuffle' : 'Shuffle & Retry'}</button>
+              <button class="btn btn-warning" id="restartCompletedButton">Restart Quiz</button>
+              <button class="btn btn-secondary" id="backToLastButton">Last Question</button>
+            </div>
+          </div>
+          <div class="developer-credit">developed by yushue_alya1</div>
+        `;
+
+        document.getElementById('reviewCompletedButton')?.addEventListener('click', () => {
+          showReview = true;
+          render();
+        });
+        
+        document.getElementById('shuffleCompletedButton')?.addEventListener('click', () => {
+          toggleShuffle();
+          showReview = false;
+          render();
+        });
+        
+        document.getElementById('restartCompletedButton')?.addEventListener('click', resetQuiz);
+        document.getElementById('backToLastButton')?.addEventListener('click', () => {
+          currentIndex = questions.length - 1;
+          goToQuestion(currentIndex);
+        });
+      }
+
+      render();
+    })();
+  </script>
+</body>
+</html>
